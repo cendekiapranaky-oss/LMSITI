@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Siswa - SIT E-Learning</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            /* Latar belakang konsisten */
+            background: url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1920&auto=format&fit=crop') no-repeat center center/cover fixed;
+            color: #ffffff;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(11, 95, 176, 0.85) 0%, rgba(15, 32, 39, 0.9) 100%);
+            z-index: -1;
+        }
+
+        /* Glassmorphism Utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sidebar Styling - Ditambahkan flex dan column agar menu logout bisa di bawah */
+        .sidebar {
+            width: 260px; height: 100vh; padding: 25px 20px;
+            position: fixed; z-index: 100;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(15px);
+            display: flex; flex-direction: column; 
+        }
+
+        .logo-container {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 50px;
+            text-decoration: none; cursor: pointer; padding: 0 10px;
+        }
+
+        .logo-container i { font-size: 30px; color: #95de64; text-shadow: 0 0 15px rgba(149, 222, 100, 0.4); }
+        .logo-container h2 { font-size: 20px; color: #ffffff; font-weight: 700; }
+
+        .menu-item {
+            display: flex; align-items: center; padding: 14px 20px; margin-bottom: 8px;
+            border-radius: 12px; text-decoration: none; color: rgba(255, 255, 255, 0.7);
+            font-weight: 500; transition: all 0.3s ease;
+        }
+
+        .menu-item i { margin-right: 15px; font-size: 18px; width: 20px; text-align: center; }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; transform: translateX(5px); }
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(82, 196, 26, 0.3) 0%, rgba(82, 196, 26, 0.1) 100%);
+            border: 1px solid rgba(82, 196, 26, 0.4); color: #ffffff; box-shadow: 0 5px 15px rgba(82, 196, 26, 0.2);
+        }
+        .menu-item.active i { color: #95de64; }
+
+        /* Styling khusus tombol logout */
+        .menu-logout {
+            margin-top: auto; /* Mendorong tombol ke paling bawah */
+            color: #ff4d4f; 
+            border-top: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 0; 
+            padding-top: 20px;
+        }
+        .menu-logout:hover { 
+            color: #ff7875; 
+            background: transparent; 
+            transform: none; 
+            text-shadow: 0 0 10px rgba(255, 77, 79, 0.4); 
+        }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; padding: 40px; width: calc(100% - 260px); }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
+            padding: 20px 30px; border-radius: 20px;
+        }
+
+        .greeting h1 { font-size: 26px; color: #ffffff; margin-bottom: 5px; }
+        .greeting p { color: rgba(255, 255, 255, 0.7); font-size: 14px; }
+
+        .profile { display: flex; align-items: center; gap: 20px; }
+        .notif-btn {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 18px; cursor: pointer; transition: 0.3s;
+        }
+        .notif-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .profile img {
+            width: 50px; height: 50px; border-radius: 50%; border: 2px solid #95de64; box-shadow: 0 0 15px rgba(149, 222, 100, 0.3);
+        }
+
+        /* Dashboard Cards */
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px;
+        }
+
+        .card {
+            padding: 25px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden; transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: #4facfe; }
+        .card.green::before { background: #95de64; }
+        .card.purple::before { background: #c471ed; }
+
+        .card-info h3 { font-size: 32px; font-weight: 700; margin-bottom: 5px; color: #ffffff; }
+        .card-info p { color: rgba(255, 255, 255, 0.7); font-size: 14px; }
+
+        .card-icon {
+            width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card .card-icon { color: #4facfe; box-shadow: 0 5px 15px rgba(79, 172, 254, 0.2); }
+        .card.green .card-icon { color: #95de64; box-shadow: 0 5px 15px rgba(149, 222, 100, 0.2); }
+        .card.purple .card-icon { color: #c471ed; box-shadow: 0 5px 15px rgba(196, 113, 237, 0.2); }
+
+        /* Sections Grid (Updated to 3 columns) */
+        .content-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;
+        }
+
+        .section-box { padding: 25px; border-radius: 20px; display: flex; flex-direction: column; }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .section-header h3 { font-size: 18px; color: #ffffff; }
+        .section-header a {
+            font-size: 13px; text-decoration: none; color: #4facfe; background: rgba(79, 172, 254, 0.1);
+            padding: 5px 12px; border-radius: 50px; transition: 0.3s;
+        }
+        .section-header a:hover { background: rgba(79, 172, 254, 0.2); }
+
+        .list-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .list-item:last-child { border-bottom: none; }
+        .item-info h4 { font-size: 15px; color: #ffffff; margin-bottom: 4px; }
+        .item-info p { font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+
+        .badge { padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 600; backdrop-filter: blur(5px); }
+        .badge-danger { background: rgba(255, 77, 79, 0.15); color: #ff7875; border: 1px solid rgba(255, 77, 79, 0.3); }
+        .badge-success { background: rgba(82, 196, 26, 0.15); color: #95de64; border: 1px solid rgba(82, 196, 26, 0.3); }
+        .badge-warning { background: rgba(250, 173, 20, 0.15); color: #ffd666; border: 1px solid rgba(250, 173, 20, 0.3); }
+
+        .glass-checkbox {
+            appearance: none; width: 22px; height: 22px; background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 6px; cursor: pointer;
+            position: relative; transition: 0.3s;
+        }
+        .glass-checkbox:checked { background: #52c41a; border-color: #52c41a; }
+        .glass-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 14px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        /* Widget Peringkat Mini */
+        .rank-widget { text-align: center; padding: 10px 0; margin-top: auto; margin-bottom: auto; }
+        .rank-number { font-size: 56px; font-weight: 700; color: #4facfe; text-shadow: 0 0 20px rgba(79, 172, 254, 0.4); line-height: 1; margin-bottom: 10px; }
+        .rank-trend { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: #95de64; background: rgba(149, 222, 100, 0.1); padding: 5px 12px; border-radius: 50px; }
+
+        @media (max-width: 992px) { .content-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        }
+    </style>
+    <script>
+    // Cek apakah user sudah login atau belum
+    if (localStorage.getItem("statusLogin") !== "berhasil") {
+        // Jika tidak ada data login, tendang balik ke halaman login
+        alert("Akses ditolak! Silakan login terlebih dahulu.");
+        window.location.href = "login.html";
+    }
+</script>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <a href="index.html" class="logo-container">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <h2>SIT E-Learning</h2>
+        </a>
+        
+        <a href="index.html" class="menu-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="materi.html" class="menu-item">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Materi Belajar</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span>Tugas & Ujian</span>
+        </a>
+        <a href="kalender.html" class="menu-item">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Kalender Akademik</span>
+        </a>
+        <a href="ranking.html" class="menu-item">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Papan Peringkat</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fa-solid fa-laptop-code"></i>
+            <span>Try Out UTBK</span>
+        </a>
+        
+        <a href="#" class="menu-item menu-logout" onclick="prosesLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Keluar (Logout)</span>
+        </a>
+    </nav>
+
+    <main class="main-content">
+        
+        <header class="glass-panel">
+            <div class="greeting">
+                <h1 id="greeting-text">Assalamu'alaikum, Siswa!</h1>
+                <p>Siap untuk menyerap ilmu baru hari ini?</p>
+            </div>
+            <div class="profile">
+                <div class="notif-btn">
+                    <i class="fa-regular fa-bell"></i>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Siti+Aminah&background=95de64&color=fff&bold=true" alt="Profile">
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <div class="card glass-panel">
+                <div class="card-info">
+                    <h3>3</h3>
+                    <p>Tugas Tertunda</p>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-file-pen"></i></div>
+            </div>
+            <div class="card green glass-panel">
+                <div class="card-info">
+                    <h3>95%</h3>
+                    <p>Kehadiran Bulan Ini</p>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-user-check"></i></div>
+            </div>
+            <div class="card purple glass-panel">
+                <div class="card-info">
+                    <h3>2 Juz</h3>
+                    <p>Progress Hafalan</p>
+                </div>
+                <div class="card-icon"><i class="fa-solid fa-book-quran"></i></div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="section-box glass-panel">
+                <div class="section-header">
+                    <h3>Jadwal Hari Ini</h3>
+                    <a href="#">Lihat Semua</a>
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Pendidikan Agama Islam</h4>
+                        <p><i class="fa-regular fa-clock"></i> 07:30 - 09:00 | Ust. Ahmad</p>
+                    </div>
+                    <span class="badge badge-success">Selesai</span>
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Matematika Wajib</h4>
+                        <p><i class="fa-regular fa-clock"></i> 09:15 - 10:45 | Ibu Sarah</p>
+                    </div>
+                    <span class="badge badge-warning">Berlangsung</span>
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Biologi Lintas Minat</h4>
+                        <p><i class="fa-regular fa-clock"></i> 11:00 - 12:30 | Bpk. Budi</p>
+                    </div>
+                    <span class="badge badge-danger">Belum Mulai</span>
+                </div>
+            </div>
+
+            <div class="section-box glass-panel">
+                <div class="section-header">
+                    <h3>Reminder Harian</h3>
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Shalat Dhuha</h4>
+                        <p>Sudahkah kamu shalat?</p>
+                    </div>
+                    <input type="checkbox" class="glass-checkbox">
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Setoran Hafalan</h4>
+                        <p>Surah Al-Mulk ayat 1-10</p>
+                    </div>
+                    <span class="badge badge-danger">Belum Setor</span>
+                </div>
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>Tugas Fisika</h4>
+                        <p>Batas: Besok, 23:59</p>
+                    </div>
+                    <span class="badge badge-warning">Due Soon</span>
+                </div>
+            </div>
+
+            <div class="section-box glass-panel">
+                <div class="section-header">
+                    <h3>Peringkat Kamu</h3>
+                    <a href="ranking.html">Lihat Detail</a>
+                </div>
+                <div class="rank-widget">
+                    <div class="rank-number">#4</div>
+                    <div class="rank-trend"><i class="fa-solid fa-arrow-trend-up"></i> Naik 2 Posisi</div>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 15px;">
+                        Tingkatkan terus belajarmu untuk masuk Top 3!
+                    </p>
+                </div>
+                <div class="list-item" style="margin-top: auto; padding-bottom: 0; border: none;">
+                    <div class="item-info">
+                        <h4>Total Poin Diperoleh</h4>
+                    </div>
+                    <span style="font-weight: 700; color: #4facfe;">8,950 pts</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Script sapaan otomatis
+        const hour = new Date().getHours();
+        let greeting = "Assalamu'alaikum";
+        if (hour >= 5 && hour < 11) greeting += ", Selamat Pagi!";
+        else if (hour >= 11 && hour < 15) greeting += ", Selamat Siang!";
+        else if (hour >= 15 && hour < 18) greeting += ", Selamat Sore!";
+        else greeting += ", Selamat Malam!";
+        
+        document.getElementById("greeting-text").innerText = greeting;
+
+        // Script untuk fungsi Logout
+        function prosesLogout() {
+            if(confirm("Apakah kamu yakin ingin keluar dari E-Learning?")) {
+                localStorage.removeItem("statusLogin");
+                window.location.href = "login.html";
+            }
+        }
+    </script>
+</body>
+</html>
